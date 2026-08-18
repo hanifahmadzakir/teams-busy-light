@@ -3,6 +3,8 @@
 
 export function ConnectSerial(arg1:string):Promise<string>;
 
+export function DisconnectSerial():Promise<string>;
+
 export function GetPorts():Promise<Array<string>>;
 
 export function HideWindow():Promise<void>;

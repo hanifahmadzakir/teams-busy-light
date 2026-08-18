@@ -1,0 +1,1544 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+frontend/
+  src/
+    assets/
+      fonts/
+        nunito-v16-latin-regular.woff2
+        OFL.txt
+      images/
+        logo-universal.png
+    components/
+      HelloWorld.vue
+    App.vue
+    main.js
+    style.css
+  wailsjs/
+    go/
+      main/
+        App.d.ts
+        App.js
+    runtime/
+      package.json
+      runtime.d.ts
+      runtime.js
+  index.html
+  package.json
+  package.json.md5
+  README.md
+  vite.config.js
+.gitignore
+app.go
+go.mod
+main.go
+README.md
+wails.json
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="frontend/src/assets/fonts/OFL.txt">
+Copyright 2016 The Nunito Project Authors (contact@sansoxygen.com),
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+This license is copied below, and is also available with a FAQ at:
+http://scripts.sil.org/OFL
+
+
+-----------------------------------------------------------
+SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
+-----------------------------------------------------------
+
+PREAMBLE
+The goals of the Open Font License (OFL) are to stimulate worldwide
+development of collaborative font projects, to support the font creation
+efforts of academic and linguistic communities, and to provide a free and
+open framework in which fonts may be shared and improved in partnership
+with others.
+
+The OFL allows the licensed fonts to be used, studied, modified and
+redistributed freely as long as they are not sold by themselves. The
+fonts, including any derivative works, can be bundled, embedded, 
+redistributed and/or sold with any software provided that any reserved
+names are not used by derivative works. The fonts and derivatives,
+however, cannot be released under any other type of license. The
+requirement for fonts to remain under this license does not apply
+to any document created using the fonts or their derivatives.
+
+DEFINITIONS
+"Font Software" refers to the set of files released by the Copyright
+Holder(s) under this license and clearly marked as such. This may
+include source files, build scripts and documentation.
+
+"Reserved Font Name" refers to any names specified as such after the
+copyright statement(s).
+
+"Original Version" refers to the collection of Font Software components as
+distributed by the Copyright Holder(s).
+
+"Modified Version" refers to any derivative made by adding to, deleting,
+or substituting -- in part or in whole -- any of the components of the
+Original Version, by changing formats or by porting the Font Software to a
+new environment.
+
+"Author" refers to any designer, engineer, programmer, technical
+writer or other person who contributed to the Font Software.
+
+PERMISSION & CONDITIONS
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of the Font Software, to use, study, copy, merge, embed, modify,
+redistribute, and sell modified and unmodified copies of the Font
+Software, subject to the following conditions:
+
+1) Neither the Font Software nor any of its individual components,
+in Original or Modified Versions, may be sold by itself.
+
+2) Original or Modified Versions of the Font Software may be bundled,
+redistributed and/or sold with any software, provided that each copy
+contains the above copyright notice and this license. These can be
+included either as stand-alone text files, human-readable headers or
+in the appropriate machine-readable metadata fields within text or
+binary files as long as those fields can be easily viewed by the user.
+
+3) No Modified Version of the Font Software may use the Reserved Font
+Name(s) unless explicit written permission is granted by the corresponding
+Copyright Holder. This restriction only applies to the primary font name as
+presented to the users.
+
+4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
+Software shall not be used to promote, endorse or advertise any
+Modified Version, except to acknowledge the contribution(s) of the
+Copyright Holder(s) and the Author(s) or with their explicit written
+permission.
+
+5) The Font Software, modified or unmodified, in part or in whole,
+must be distributed entirely under this license, and must not be
+distributed under any other license. The requirement for fonts to
+remain under this license does not apply to any document created
+using the Font Software.
+
+TERMINATION
+This license becomes null and void if any of the above conditions are
+not met.
+
+DISCLAIMER
+THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
+OTHER DEALINGS IN THE FONT SOFTWARE.
+</file>
+
+<file path="frontend/src/components/HelloWorld.vue">
+<script setup>
+import {reactive} from 'vue'
+import {Greet} from '../../wailsjs/go/main/App'
+
+const data = reactive({
+  name: "",
+  resultText: "Please enter your name below 👇",
+})
+
+function greet() {
+  Greet(data.name).then(result => {
+    data.resultText = result
+  })
+}
+
+</script>
+
+<template>
+  <main>
+    <div id="result" class="result">{{ data.resultText }}</div>
+    <div id="input" class="input-box">
+      <input id="name" v-model="data.name" autocomplete="off" class="input" type="text"/>
+      <button class="btn" @click="greet">Greet</button>
+    </div>
+  </main>
+</template>
+
+<style scoped>
+.result {
+  height: 20px;
+  line-height: 20px;
+  margin: 1.5rem auto;
+}
+
+.input-box .btn {
+  width: 60px;
+  height: 30px;
+  line-height: 30px;
+  border-radius: 3px;
+  border: none;
+  margin: 0 0 0 20px;
+  padding: 0 8px;
+  cursor: pointer;
+}
+
+.input-box .btn:hover {
+  background-image: linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%);
+  color: #333333;
+}
+
+.input-box .input {
+  border: none;
+  border-radius: 3px;
+  outline: none;
+  height: 30px;
+  line-height: 30px;
+  padding: 0 10px;
+  background-color: rgba(240, 240, 240, 1);
+  -webkit-font-smoothing: antialiased;
+}
+
+.input-box .input:hover {
+  border: none;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.input-box .input:focus {
+  border: none;
+  background-color: rgba(255, 255, 255, 1);
+}
+</style>
+</file>
+
+<file path="frontend/src/App.vue">
+<script setup>
+import { ref, onMounted } from "vue";
+// Wails automatically generates standard JS bindings here when you build/dev
+import {
+  GetPorts,
+  ConnectSerial,
+  SendCommand,
+  SetAutoMode,
+  HideWindow,
+} from "../wailsjs/go/main/App";
+
+const ports = ref([]);
+const selectedPort = ref("");
+const connectionStatus = ref("Disconnected");
+const logPath = ref("");
+const isAutoMode = ref(false);
+
+const refreshPorts = async () => {
+  ports.value = await GetPorts();
+};
+
+const connect = async () => {
+  if (!selectedPort.value) return;
+  connectionStatus.value = await ConnectSerial(selectedPort.value);
+};
+
+const sendManualCommand = async (color) => {
+  if (isAutoMode.value) return; // Prevent manual override if auto is on
+  await SendCommand(color);
+};
+
+const toggleAutoMode = async () => {
+  const result = await SetAutoMode(isAutoMode.value, logPath.value);
+  console.log(result);
+};
+
+const minimizeToTray = () => {
+  HideWindow();
+};
+
+onMounted(() => {
+  refreshPorts();
+});
+</script>
+
+<template>
+  <main class="p-6 font-sans text-gray-800">
+    <h1 class="text-2xl font-bold mb-4">Teams Busy Light</h1>
+
+    <!-- Port Selection -->
+    <div class="mb-6 border p-4 rounded bg-gray-50">
+      <h2 class="font-semibold mb-2">Hardware Setup</h2>
+      <select v-model="selectedPort" class="border p-1 mr-2">
+        <option disabled value="">Select COM Port</option>
+        <option v-for="port in ports" :key="port" :value="port">
+          {{ port }}
+        </option>
+      </select>
+      <button @click="refreshPorts" class="bg-blue-200 px-3 py-1 mr-2 rounded">
+        Refresh
+      </button>
+      <button @click="connect" class="bg-blue-500 text-white px-3 py-1 rounded">
+        Connect
+      </button>
+      <span class="ml-3 text-sm">{{ connectionStatus }}</span>
+    </div>
+
+    <!-- Mode Toggle -->
+    <div class="mb-6 border p-4 rounded">
+      <h2 class="font-semibold mb-2">Operating Mode</h2>
+      <label class="flex items-center space-x-2">
+        <input type="checkbox" v-model="isAutoMode" @change="toggleAutoMode" />
+        <span>Enable Automatic Mode (Teams Sync)</span>
+      </label>
+
+      <div v-if="isAutoMode" class="mt-4">
+        <label class="block text-sm mb-1"
+          >Teams Log Path (Leave blank for default):</label
+        >
+        <input
+          v-model="logPath"
+          type="text"
+          placeholder="%localappdata%\Packages\MSTeams_8wekyb3d8bbwe\..."
+          class="w-full border p-2 text-sm"
+        />
+        <button
+          @click="toggleAutoMode"
+          class="mt-2 bg-green-500 text-white px-3 py-1 rounded text-sm"
+        >
+          Update Path
+        </button>
+      </div>
+    </div>
+
+    <!-- Manual Controls -->
+    <div
+      class="mb-6 border p-4 rounded"
+      :class="{ 'opacity-50 pointer-events-none': isAutoMode }"
+    >
+      <h2 class="font-semibold mb-2">Manual Override</h2>
+      <div class="flex space-x-2">
+        <button
+          @click="sendManualCommand('Green')"
+          class="bg-green-500 text-white px-4 py-2 rounded"
+        >
+          Available
+        </button>
+        <button
+          @click="sendManualCommand('Red')"
+          class="bg-red-500 text-white px-4 py-2 rounded"
+        >
+          Busy
+        </button>
+        <button
+          @click="sendManualCommand('Yellow')"
+          class="bg-yellow-500 text-white px-4 py-2 rounded"
+        >
+          Away
+        </button>
+        <button
+          @click="sendManualCommand('BlinkRed')"
+          class="bg-red-700 text-white px-4 py-2 rounded"
+        >
+          Calling
+        </button>
+      </div>
+    </div>
+
+    <!-- Background running -->
+    <button
+      @click="minimizeToTray"
+      class="text-sm underline text-gray-500 hover:text-gray-700"
+    >
+      Minimize to System Tray
+    </button>
+  </main>
+</template>
+</file>
+
+<file path="frontend/src/main.js">
+import {createApp} from 'vue'
+import App from './App.vue'
+import './style.css';
+
+createApp(App).mount('#app')
+</file>
+
+<file path="frontend/src/style.css">
+html {
+    background-color: rgba(27, 38, 54, 1);
+    text-align: center;
+    color: white;
+}
+
+body {
+    margin: 0;
+    color: white;
+    font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+}
+
+@font-face {
+    font-family: "Nunito";
+    font-style: normal;
+    font-weight: 400;
+    src: local(""),
+    url("assets/fonts/nunito-v16-latin-regular.woff2") format("woff2");
+}
+
+#app {
+    height: 100vh;
+    text-align: center;
+}
+</file>
+
+<file path="frontend/wailsjs/go/main/App.d.ts">
+// Cynhyrchwyd y ffeil hon yn awtomatig. PEIDIWCH Â MODIWL
+// This file is automatically generated. DO NOT EDIT
+
+export function ConnectSerial(arg1:string):Promise<string>;
+
+export function GetPorts():Promise<Array<string>>;
+
+export function HideWindow():Promise<void>;
+
+export function SendCommand(arg1:string):Promise<string>;
+
+export function SetAutoMode(arg1:boolean,arg2:string):Promise<string>;
+</file>
+
+<file path="frontend/wailsjs/go/main/App.js">
+// @ts-check
+// Cynhyrchwyd y ffeil hon yn awtomatig. PEIDIWCH Â MODIWL
+// This file is automatically generated. DO NOT EDIT
+
+export function ConnectSerial(arg1) {
+  return window['go']['main']['App']['ConnectSerial'](arg1);
+}
+
+export function GetPorts() {
+  return window['go']['main']['App']['GetPorts']();
+}
+
+export function HideWindow() {
+  return window['go']['main']['App']['HideWindow']();
+}
+
+export function SendCommand(arg1) {
+  return window['go']['main']['App']['SendCommand'](arg1);
+}
+
+export function SetAutoMode(arg1, arg2) {
+  return window['go']['main']['App']['SetAutoMode'](arg1, arg2);
+}
+</file>
+
+<file path="frontend/wailsjs/runtime/package.json">
+{
+  "name": "@wailsapp/runtime",
+  "version": "2.0.0",
+  "description": "Wails Javascript runtime library",
+  "main": "runtime.js",
+  "types": "runtime.d.ts",
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wailsapp/wails.git"
+  },
+  "keywords": [
+    "Wails",
+    "Javascript",
+    "Go"
+  ],
+  "author": "Lea Anthony <lea.anthony@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wailsapp/wails/issues"
+  },
+  "homepage": "https://github.com/wailsapp/wails#readme"
+}
+</file>
+
+<file path="frontend/wailsjs/runtime/runtime.d.ts">
+/*
+ _       __      _ __
+| |     / /___ _(_) /____
+| | /| / / __ `/ / / ___/
+| |/ |/ / /_/ / / (__  )
+|__/|__/\__,_/_/_/____/
+The electron alternative for Go
+(c) Lea Anthony 2019-present
+*/
+
+export interface Position {
+    x: number;
+    y: number;
+}
+
+export interface Size {
+    w: number;
+    h: number;
+}
+
+export interface Screen {
+    isCurrent: boolean;
+    isPrimary: boolean;
+    width : number
+    height : number
+}
+
+// Environment information such as platform, buildtype, ...
+export interface EnvironmentInfo {
+    buildType: string;
+    platform: string;
+    arch: string;
+}
+
+// [EventsEmit](https://wails.io/docs/reference/runtime/events#eventsemit)
+// emits the given event. Optional data may be passed with the event.
+// This will trigger any event listeners.
+export function EventsEmit(eventName: string, ...data: any): void;
+
+// [EventsOn](https://wails.io/docs/reference/runtime/events#eventson) sets up a listener for the given event name.
+export function EventsOn(eventName: string, callback: (...data: any) => void): () => void;
+
+// [EventsOnMultiple](https://wails.io/docs/reference/runtime/events#eventsonmultiple)
+// sets up a listener for the given event name, but will only trigger a given number times.
+export function EventsOnMultiple(eventName: string, callback: (...data: any) => void, maxCallbacks: number): () => void;
+
+// [EventsOnce](https://wails.io/docs/reference/runtime/events#eventsonce)
+// sets up a listener for the given event name, but will only trigger once.
+export function EventsOnce(eventName: string, callback: (...data: any) => void): () => void;
+
+// [EventsOff](https://wails.io/docs/reference/runtime/events#eventsoff)
+// unregisters the listener for the given event name.
+export function EventsOff(eventName: string, ...additionalEventNames: string[]): void;
+
+// [EventsOffAll](https://wails.io/docs/reference/runtime/events#eventsoffall)
+// unregisters all listeners.
+export function EventsOffAll(): void;
+
+// [LogPrint](https://wails.io/docs/reference/runtime/log#logprint)
+// logs the given message as a raw message
+export function LogPrint(message: string): void;
+
+// [LogTrace](https://wails.io/docs/reference/runtime/log#logtrace)
+// logs the given message at the `trace` log level.
+export function LogTrace(message: string): void;
+
+// [LogDebug](https://wails.io/docs/reference/runtime/log#logdebug)
+// logs the given message at the `debug` log level.
+export function LogDebug(message: string): void;
+
+// [LogError](https://wails.io/docs/reference/runtime/log#logerror)
+// logs the given message at the `error` log level.
+export function LogError(message: string): void;
+
+// [LogFatal](https://wails.io/docs/reference/runtime/log#logfatal)
+// logs the given message at the `fatal` log level.
+// The application will quit after calling this method.
+export function LogFatal(message: string): void;
+
+// [LogInfo](https://wails.io/docs/reference/runtime/log#loginfo)
+// logs the given message at the `info` log level.
+export function LogInfo(message: string): void;
+
+// [LogWarning](https://wails.io/docs/reference/runtime/log#logwarning)
+// logs the given message at the `warning` log level.
+export function LogWarning(message: string): void;
+
+// [WindowReload](https://wails.io/docs/reference/runtime/window#windowreload)
+// Forces a reload by the main application as well as connected browsers.
+export function WindowReload(): void;
+
+// [WindowReloadApp](https://wails.io/docs/reference/runtime/window#windowreloadapp)
+// Reloads the application frontend.
+export function WindowReloadApp(): void;
+
+// [WindowSetAlwaysOnTop](https://wails.io/docs/reference/runtime/window#windowsetalwaysontop)
+// Sets the window AlwaysOnTop or not on top.
+export function WindowSetAlwaysOnTop(b: boolean): void;
+
+// [WindowSetSystemDefaultTheme](https://wails.io/docs/next/reference/runtime/window#windowsetsystemdefaulttheme)
+// *Windows only*
+// Sets window theme to system default (dark/light).
+export function WindowSetSystemDefaultTheme(): void;
+
+// [WindowSetLightTheme](https://wails.io/docs/next/reference/runtime/window#windowsetlighttheme)
+// *Windows only*
+// Sets window to light theme.
+export function WindowSetLightTheme(): void;
+
+// [WindowSetDarkTheme](https://wails.io/docs/next/reference/runtime/window#windowsetdarktheme)
+// *Windows only*
+// Sets window to dark theme.
+export function WindowSetDarkTheme(): void;
+
+// [WindowCenter](https://wails.io/docs/reference/runtime/window#windowcenter)
+// Centers the window on the monitor the window is currently on.
+export function WindowCenter(): void;
+
+// [WindowSetTitle](https://wails.io/docs/reference/runtime/window#windowsettitle)
+// Sets the text in the window title bar.
+export function WindowSetTitle(title: string): void;
+
+// [WindowFullscreen](https://wails.io/docs/reference/runtime/window#windowfullscreen)
+// Makes the window full screen.
+export function WindowFullscreen(): void;
+
+// [WindowUnfullscreen](https://wails.io/docs/reference/runtime/window#windowunfullscreen)
+// Restores the previous window dimensions and position prior to full screen.
+export function WindowUnfullscreen(): void;
+
+// [WindowIsFullscreen](https://wails.io/docs/reference/runtime/window#windowisfullscreen)
+// Returns the state of the window, i.e. whether the window is in full screen mode or not.
+export function WindowIsFullscreen(): Promise<boolean>;
+
+// [WindowSetSize](https://wails.io/docs/reference/runtime/window#windowsetsize)
+// Sets the width and height of the window.
+export function WindowSetSize(width: number, height: number): void;
+
+// [WindowGetSize](https://wails.io/docs/reference/runtime/window#windowgetsize)
+// Gets the width and height of the window.
+export function WindowGetSize(): Promise<Size>;
+
+// [WindowSetMaxSize](https://wails.io/docs/reference/runtime/window#windowsetmaxsize)
+// Sets the maximum window size. Will resize the window if the window is currently larger than the given dimensions.
+// Setting a size of 0,0 will disable this constraint.
+export function WindowSetMaxSize(width: number, height: number): void;
+
+// [WindowSetMinSize](https://wails.io/docs/reference/runtime/window#windowsetminsize)
+// Sets the minimum window size. Will resize the window if the window is currently smaller than the given dimensions.
+// Setting a size of 0,0 will disable this constraint.
+export function WindowSetMinSize(width: number, height: number): void;
+
+// [WindowSetPosition](https://wails.io/docs/reference/runtime/window#windowsetposition)
+// Sets the window position relative to the monitor the window is currently on.
+export function WindowSetPosition(x: number, y: number): void;
+
+// [WindowGetPosition](https://wails.io/docs/reference/runtime/window#windowgetposition)
+// Gets the window position relative to the monitor the window is currently on.
+export function WindowGetPosition(): Promise<Position>;
+
+// [WindowHide](https://wails.io/docs/reference/runtime/window#windowhide)
+// Hides the window.
+export function WindowHide(): void;
+
+// [WindowShow](https://wails.io/docs/reference/runtime/window#windowshow)
+// Shows the window, if it is currently hidden.
+export function WindowShow(): void;
+
+// [WindowMaximise](https://wails.io/docs/reference/runtime/window#windowmaximise)
+// Maximises the window to fill the screen.
+export function WindowMaximise(): void;
+
+// [WindowToggleMaximise](https://wails.io/docs/reference/runtime/window#windowtogglemaximise)
+// Toggles between Maximised and UnMaximised.
+export function WindowToggleMaximise(): void;
+
+// [WindowUnmaximise](https://wails.io/docs/reference/runtime/window#windowunmaximise)
+// Restores the window to the dimensions and position prior to maximising.
+export function WindowUnmaximise(): void;
+
+// [WindowIsMaximised](https://wails.io/docs/reference/runtime/window#windowismaximised)
+// Returns the state of the window, i.e. whether the window is maximised or not.
+export function WindowIsMaximised(): Promise<boolean>;
+
+// [WindowMinimise](https://wails.io/docs/reference/runtime/window#windowminimise)
+// Minimises the window.
+export function WindowMinimise(): void;
+
+// [WindowUnminimise](https://wails.io/docs/reference/runtime/window#windowunminimise)
+// Restores the window to the dimensions and position prior to minimising.
+export function WindowUnminimise(): void;
+
+// [WindowIsMinimised](https://wails.io/docs/reference/runtime/window#windowisminimised)
+// Returns the state of the window, i.e. whether the window is minimised or not.
+export function WindowIsMinimised(): Promise<boolean>;
+
+// [WindowIsNormal](https://wails.io/docs/reference/runtime/window#windowisnormal)
+// Returns the state of the window, i.e. whether the window is normal or not.
+export function WindowIsNormal(): Promise<boolean>;
+
+// [WindowSetBackgroundColour](https://wails.io/docs/reference/runtime/window#windowsetbackgroundcolour)
+// Sets the background colour of the window to the given RGBA colour definition. This colour will show through for all transparent pixels.
+export function WindowSetBackgroundColour(R: number, G: number, B: number, A: number): void;
+
+// [ScreenGetAll](https://wails.io/docs/reference/runtime/window#screengetall)
+// Gets the all screens. Call this anew each time you want to refresh data from the underlying windowing system.
+export function ScreenGetAll(): Promise<Screen[]>;
+
+// [BrowserOpenURL](https://wails.io/docs/reference/runtime/browser#browseropenurl)
+// Opens the given URL in the system browser.
+export function BrowserOpenURL(url: string): void;
+
+// [Environment](https://wails.io/docs/reference/runtime/intro#environment)
+// Returns information about the environment
+export function Environment(): Promise<EnvironmentInfo>;
+
+// [Quit](https://wails.io/docs/reference/runtime/intro#quit)
+// Quits the application.
+export function Quit(): void;
+
+// [Hide](https://wails.io/docs/reference/runtime/intro#hide)
+// Hides the application.
+export function Hide(): void;
+
+// [Show](https://wails.io/docs/reference/runtime/intro#show)
+// Shows the application.
+export function Show(): void;
+
+// [ClipboardGetText](https://wails.io/docs/reference/runtime/clipboard#clipboardgettext)
+// Returns the current text stored on clipboard
+export function ClipboardGetText(): Promise<string>;
+
+// [ClipboardSetText](https://wails.io/docs/reference/runtime/clipboard#clipboardsettext)
+// Sets a text on the clipboard
+export function ClipboardSetText(text: string): Promise<boolean>;
+
+// [OnFileDrop](https://wails.io/docs/reference/runtime/draganddrop#onfiledrop)
+// OnFileDrop listens to drag and drop events and calls the callback with the coordinates of the drop and an array of path strings.
+export function OnFileDrop(callback: (x: number, y: number ,paths: string[]) => void, useDropTarget: boolean) :void
+
+// [OnFileDropOff](https://wails.io/docs/reference/runtime/draganddrop#dragandddropoff)
+// OnFileDropOff removes the drag and drop listeners and handlers.
+export function OnFileDropOff() :void
+
+// Check if the file path resolver is available
+export function CanResolveFilePaths(): boolean;
+
+// Resolves file paths for an array of files
+export function ResolveFilePaths(files: File[]): void
+
+// Notification types
+export interface NotificationOptions {
+    id: string;
+    title: string;
+    subtitle?: string; // macOS and Linux only
+    body?: string;
+    categoryId?: string;
+    data?: { [key: string]: any };
+}
+
+export interface NotificationAction {
+    id?: string;
+    title?: string;
+    destructive?: boolean; // macOS-specific
+}
+
+export interface NotificationCategory {
+    id?: string;
+    actions?: NotificationAction[];
+    hasReplyField?: boolean;
+    replyPlaceholder?: string;
+    replyButtonTitle?: string;
+}
+
+// [InitializeNotifications](https://wails.io/docs/reference/runtime/notification#initializenotifications)
+// Initializes the notification service for the application.
+// This must be called before sending any notifications.
+export function InitializeNotifications(): Promise<void>;
+
+// [CleanupNotifications](https://wails.io/docs/reference/runtime/notification#cleanupnotifications)
+// Cleans up notification resources and releases any held connections.
+export function CleanupNotifications(): Promise<void>;
+
+// [IsNotificationAvailable](https://wails.io/docs/reference/runtime/notification#isnotificationavailable)
+// Checks if notifications are available on the current platform.
+export function IsNotificationAvailable(): Promise<boolean>;
+
+// [RequestNotificationAuthorization](https://wails.io/docs/reference/runtime/notification#requestnotificationauthorization)
+// Requests notification authorization from the user (macOS only).
+export function RequestNotificationAuthorization(): Promise<boolean>;
+
+// [CheckNotificationAuthorization](https://wails.io/docs/reference/runtime/notification#checknotificationauthorization)
+// Checks the current notification authorization status (macOS only).
+export function CheckNotificationAuthorization(): Promise<boolean>;
+
+// [SendNotification](https://wails.io/docs/reference/runtime/notification#sendnotification)
+// Sends a basic notification with the given options.
+export function SendNotification(options: NotificationOptions): Promise<void>;
+
+// [SendNotificationWithActions](https://wails.io/docs/reference/runtime/notification#sendnotificationwithactions)
+// Sends a notification with action buttons. Requires a registered category.
+export function SendNotificationWithActions(options: NotificationOptions): Promise<void>;
+
+// [RegisterNotificationCategory](https://wails.io/docs/reference/runtime/notification#registernotificationcategory)
+// Registers a notification category that can be used with SendNotificationWithActions.
+export function RegisterNotificationCategory(category: NotificationCategory): Promise<void>;
+
+// [RemoveNotificationCategory](https://wails.io/docs/reference/runtime/notification#removenotificationcategory)
+// Removes a previously registered notification category.
+export function RemoveNotificationCategory(categoryId: string): Promise<void>;
+
+// [RemoveAllPendingNotifications](https://wails.io/docs/reference/runtime/notification#removeallpendingnotifications)
+// Removes all pending notifications from the notification center.
+export function RemoveAllPendingNotifications(): Promise<void>;
+
+// [RemovePendingNotification](https://wails.io/docs/reference/runtime/notification#removependingnotification)
+// Removes a specific pending notification by its identifier.
+export function RemovePendingNotification(identifier: string): Promise<void>;
+
+// [RemoveAllDeliveredNotifications](https://wails.io/docs/reference/runtime/notification#removealldeliverednotifications)
+// Removes all delivered notifications from the notification center.
+export function RemoveAllDeliveredNotifications(): Promise<void>;
+
+// [RemoveDeliveredNotification](https://wails.io/docs/reference/runtime/notification#removedeliverednotification)
+// Removes a specific delivered notification by its identifier.
+export function RemoveDeliveredNotification(identifier: string): Promise<void>;
+
+// [RemoveNotification](https://wails.io/docs/reference/runtime/notification#removenotification)
+// Removes a notification by its identifier (cross-platform convenience function).
+export function RemoveNotification(identifier: string): Promise<void>;
+</file>
+
+<file path="frontend/wailsjs/runtime/runtime.js">
+/*
+ _       __      _ __
+| |     / /___ _(_) /____
+| | /| / / __ `/ / / ___/
+| |/ |/ / /_/ / / (__  )
+|__/|__/\__,_/_/_/____/
+The electron alternative for Go
+(c) Lea Anthony 2019-present
+*/
+
+export function LogPrint(message) {
+    window.runtime.LogPrint(message);
+}
+
+export function LogTrace(message) {
+    window.runtime.LogTrace(message);
+}
+
+export function LogDebug(message) {
+    window.runtime.LogDebug(message);
+}
+
+export function LogInfo(message) {
+    window.runtime.LogInfo(message);
+}
+
+export function LogWarning(message) {
+    window.runtime.LogWarning(message);
+}
+
+export function LogError(message) {
+    window.runtime.LogError(message);
+}
+
+export function LogFatal(message) {
+    window.runtime.LogFatal(message);
+}
+
+export function EventsOnMultiple(eventName, callback, maxCallbacks) {
+    return window.runtime.EventsOnMultiple(eventName, callback, maxCallbacks);
+}
+
+export function EventsOn(eventName, callback) {
+    return EventsOnMultiple(eventName, callback, -1);
+}
+
+export function EventsOff(eventName, ...additionalEventNames) {
+    return window.runtime.EventsOff(eventName, ...additionalEventNames);
+}
+
+export function EventsOffAll() {
+  return window.runtime.EventsOffAll();
+}
+
+export function EventsOnce(eventName, callback) {
+    return EventsOnMultiple(eventName, callback, 1);
+}
+
+export function EventsEmit(eventName) {
+    let args = [eventName].slice.call(arguments);
+    return window.runtime.EventsEmit.apply(null, args);
+}
+
+export function WindowReload() {
+    window.runtime.WindowReload();
+}
+
+export function WindowReloadApp() {
+    window.runtime.WindowReloadApp();
+}
+
+export function WindowSetAlwaysOnTop(b) {
+    window.runtime.WindowSetAlwaysOnTop(b);
+}
+
+export function WindowSetSystemDefaultTheme() {
+    window.runtime.WindowSetSystemDefaultTheme();
+}
+
+export function WindowSetLightTheme() {
+    window.runtime.WindowSetLightTheme();
+}
+
+export function WindowSetDarkTheme() {
+    window.runtime.WindowSetDarkTheme();
+}
+
+export function WindowCenter() {
+    window.runtime.WindowCenter();
+}
+
+export function WindowSetTitle(title) {
+    window.runtime.WindowSetTitle(title);
+}
+
+export function WindowFullscreen() {
+    window.runtime.WindowFullscreen();
+}
+
+export function WindowUnfullscreen() {
+    window.runtime.WindowUnfullscreen();
+}
+
+export function WindowIsFullscreen() {
+    return window.runtime.WindowIsFullscreen();
+}
+
+export function WindowGetSize() {
+    return window.runtime.WindowGetSize();
+}
+
+export function WindowSetSize(width, height) {
+    window.runtime.WindowSetSize(width, height);
+}
+
+export function WindowSetMaxSize(width, height) {
+    window.runtime.WindowSetMaxSize(width, height);
+}
+
+export function WindowSetMinSize(width, height) {
+    window.runtime.WindowSetMinSize(width, height);
+}
+
+export function WindowSetPosition(x, y) {
+    window.runtime.WindowSetPosition(x, y);
+}
+
+export function WindowGetPosition() {
+    return window.runtime.WindowGetPosition();
+}
+
+export function WindowHide() {
+    window.runtime.WindowHide();
+}
+
+export function WindowShow() {
+    window.runtime.WindowShow();
+}
+
+export function WindowMaximise() {
+    window.runtime.WindowMaximise();
+}
+
+export function WindowToggleMaximise() {
+    window.runtime.WindowToggleMaximise();
+}
+
+export function WindowUnmaximise() {
+    window.runtime.WindowUnmaximise();
+}
+
+export function WindowIsMaximised() {
+    return window.runtime.WindowIsMaximised();
+}
+
+export function WindowMinimise() {
+    window.runtime.WindowMinimise();
+}
+
+export function WindowUnminimise() {
+    window.runtime.WindowUnminimise();
+}
+
+export function WindowSetBackgroundColour(R, G, B, A) {
+    window.runtime.WindowSetBackgroundColour(R, G, B, A);
+}
+
+export function ScreenGetAll() {
+    return window.runtime.ScreenGetAll();
+}
+
+export function WindowIsMinimised() {
+    return window.runtime.WindowIsMinimised();
+}
+
+export function WindowIsNormal() {
+    return window.runtime.WindowIsNormal();
+}
+
+export function BrowserOpenURL(url) {
+    window.runtime.BrowserOpenURL(url);
+}
+
+export function Environment() {
+    return window.runtime.Environment();
+}
+
+export function Quit() {
+    window.runtime.Quit();
+}
+
+export function Hide() {
+    window.runtime.Hide();
+}
+
+export function Show() {
+    window.runtime.Show();
+}
+
+export function ClipboardGetText() {
+    return window.runtime.ClipboardGetText();
+}
+
+export function ClipboardSetText(text) {
+    return window.runtime.ClipboardSetText(text);
+}
+
+/**
+ * Callback for OnFileDrop returns a slice of file path strings when a drop is finished.
+ *
+ * @export
+ * @callback OnFileDropCallback
+ * @param {number} x - x coordinate of the drop
+ * @param {number} y - y coordinate of the drop
+ * @param {string[]} paths - A list of file paths.
+ */
+
+/**
+ * OnFileDrop listens to drag and drop events and calls the callback with the coordinates of the drop and an array of path strings.
+ *
+ * @export
+ * @param {OnFileDropCallback} callback - Callback for OnFileDrop returns a slice of file path strings when a drop is finished.
+ * @param {boolean} [useDropTarget=true] - Only call the callback when the drop finished on an element that has the drop target style. (--wails-drop-target)
+ */
+export function OnFileDrop(callback, useDropTarget) {
+    return window.runtime.OnFileDrop(callback, useDropTarget);
+}
+
+/**
+ * OnFileDropOff removes the drag and drop listeners and handlers.
+ */
+export function OnFileDropOff() {
+    return window.runtime.OnFileDropOff();
+}
+
+export function CanResolveFilePaths() {
+    return window.runtime.CanResolveFilePaths();
+}
+
+export function ResolveFilePaths(files) {
+    return window.runtime.ResolveFilePaths(files);
+}
+
+export function InitializeNotifications() {
+    return window.runtime.InitializeNotifications();
+}
+
+export function CleanupNotifications() {
+    return window.runtime.CleanupNotifications();
+}
+
+export function IsNotificationAvailable() {
+    return window.runtime.IsNotificationAvailable();
+}
+
+export function RequestNotificationAuthorization() {
+    return window.runtime.RequestNotificationAuthorization();
+}
+
+export function CheckNotificationAuthorization() {
+    return window.runtime.CheckNotificationAuthorization();
+}
+
+export function SendNotification(options) {
+    return window.runtime.SendNotification(options);
+}
+
+export function SendNotificationWithActions(options) {
+    return window.runtime.SendNotificationWithActions(options);
+}
+
+export function RegisterNotificationCategory(category) {
+    return window.runtime.RegisterNotificationCategory(category);
+}
+
+export function RemoveNotificationCategory(categoryId) {
+    return window.runtime.RemoveNotificationCategory(categoryId);
+}
+
+export function RemoveAllPendingNotifications() {
+    return window.runtime.RemoveAllPendingNotifications();
+}
+
+export function RemovePendingNotification(identifier) {
+    return window.runtime.RemovePendingNotification(identifier);
+}
+
+export function RemoveAllDeliveredNotifications() {
+    return window.runtime.RemoveAllDeliveredNotifications();
+}
+
+export function RemoveDeliveredNotification(identifier) {
+    return window.runtime.RemoveDeliveredNotification(identifier);
+}
+
+export function RemoveNotification(identifier) {
+    return window.runtime.RemoveNotification(identifier);
+}
+</file>
+
+<file path="frontend/index.html">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>teams-busy-light</title>
+</head>
+<body>
+<div id="app"></div>
+<script src="./src/main.js" type="module"></script>
+</body>
+</html>
+</file>
+
+<file path="frontend/package.json">
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.0",
+    "vite": "^7.0.0"
+  }
+}
+</file>
+
+<file path="frontend/package.json.md5">
+71e741a4044d4a0f11cff668ef3f7ad4
+</file>
+
+<file path="frontend/README.md">
+# Vue 3 + Vite
+
+This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs,
+check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+
+## Recommended IDE Setup
+
+- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
+</file>
+
+<file path="frontend/vite.config.js">
+import {defineConfig} from 'vite'
+import vue from '@vitejs/plugin-vue'
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [vue()]
+})
+</file>
+
+<file path=".gitignore">
+build/bin
+node_modules
+frontend/dist
+</file>
+
+<file path="app.go">
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+	"bufio"
+
+	"github.com/getlantern/systray"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"go.bug.st/serial"
+	
+	
+)
+
+type App struct {
+	ctx          context.Context
+	serialPort   serial.Port
+	autoMode     bool
+	logPath      string
+	stopLogCheck chan bool
+}
+
+func NewApp() *App {
+	return &App{
+		stopLogCheck: make(chan bool),
+	}
+}
+
+// OnStartup is called when the app starts
+func (a *App) startup(ctx context.Context) {
+	a.ctx = ctx
+
+	// Initialize System Tray in a separate goroutine
+	go systray.Run(a.onReady, a.onExit)
+}
+
+// --- SYSTEM TRAY LOGIC ---
+func (a *App) onReady() {
+	systray.SetTitle("Busy Light")
+	systray.SetTooltip("Teams Busy Light Controller")
+	
+	mOpen := systray.AddMenuItem("Open", "Open the application UI")
+	mQuit := systray.AddMenuItem("Quit", "Quit the application")
+
+	for {
+		select {
+		case <-mOpen.ClickedCh:
+			runtime.WindowShow(a.ctx)
+		case <-mQuit.ClickedCh:
+			systray.Quit()
+			runtime.Quit(a.ctx)
+			return
+		}
+	}
+}
+
+func (a *App) onExit() {
+	// Clean up tray icon
+}
+
+// --- IPC METHODS CALLED BY VUE ---
+
+// GetPorts returns a list of available COM ports
+func (a *App) GetPorts() []string {
+    portMap := make(map[string]bool)
+
+    // 1. Try getting ports from the serial library
+    ports, err := serial.GetPortsList()
+    if err == nil {
+        for _, port := range ports {
+            portMap[port] = true
+        }
+    }
+
+    // 2. Scan OS-specific locations (like Windows Registry) as a fallback
+    scanOSSpecificPorts(portMap)
+
+    // 3. Convert the map back to a slice for the frontend
+    var finalPorts []string
+    for port := range portMap {
+        finalPorts = append(finalPorts, port)
+    }
+
+    return finalPorts
+}
+
+// ConnectSerial connects to the selected Wemos D1 port
+func (a *App) ConnectSerial(portName string) string {
+	mode := &serial.Mode{BaudRate: 9600}
+	port, err := serial.Open(portName, mode)
+	if err != nil {
+		return fmt.Sprintf("Error: %v", err)
+	}
+	a.serialPort = port
+	return "Connected"
+}
+
+// SendCommand sends a string (e.g., "Red", "Green") to the Wemos
+func (a *App) SendCommand(cmd string) string {
+	if a.serialPort == nil {
+		return "Port not connected"
+	}
+	_, err := a.serialPort.Write([]byte(cmd + "\n"))
+	if err != nil {
+		return fmt.Sprintf("Error writing to serial: %v", err)
+	}
+	return "Success"
+}
+
+// SetAutoMode toggles reading the Teams Log
+func (a *App) SetAutoMode(enabled bool, inputPath string) string {
+	a.autoMode = enabled
+	
+	if !enabled {
+		a.stopLogCheck <- true
+		return "Manual mode enabled"
+	}
+
+	// Handle Windows %localappdata% resolution
+	if inputPath == "" {
+		inputPath = "%localappdata%\\Packages\\MSTeams_8wekyb3d8bbwe\\LocalCache\\Microsoft\\MSTeams\\Logs"
+	}
+	
+	if strings.Contains(inputPath, "%localappdata%") {
+		localAppData := os.Getenv("LOCALAPPDATA")
+		inputPath = strings.Replace(inputPath, "%localappdata%", localAppData, 1)
+	}
+
+	a.logPath = inputPath
+	
+	go a.watchTeamsLog() // Start background watcher
+	return "Auto mode enabled, watching logs..."
+}
+
+// --- LOG WATCHER (Background Goroutine) ---
+func (a *App) watchTeamsLog() {
+    ticker := time.NewTicker(3 * time.Second)
+    defer ticker.Stop()
+
+    lastStatus := ""
+
+    for {
+        select {
+        case <-a.stopLogCheck:
+            return
+        case <-ticker.C:
+            // Find the latest .log file in the directory
+            files, err := filepath.Glob(filepath.Join(a.logPath, "*.log"))
+            if err != nil || len(files) == 0 {
+                continue
+            }
+
+            // Find the most recently modified file
+            var newestFile string
+            var newestTime int64
+            for _, file := range files {
+                info, err := os.Stat(file)
+                if err == nil && info.ModTime().Unix() > newestTime {
+                    newestTime = info.ModTime().Unix()
+                    newestFile = file
+                }
+            }
+
+            if newestFile != "" {
+                currentStatus := a.readLatestStatus(newestFile)
+                if currentStatus != "" && currentStatus != lastStatus {
+                    a.SendCommand(currentStatus)
+                    lastStatus = currentStatus
+                }
+            }
+        }
+    }
+}
+
+// Helper function to read the file and extract the status
+func (a *App) readLatestStatus(filePath string) string {
+    file, err := os.Open(filePath)
+    if err != nil {
+        return ""
+    }
+    defer file.Close()
+
+    scanner := bufio.NewScanner(file)
+    latestColor := ""
+
+    // Scan through the file. In a production app, you might want to 
+    // seek to the end and tail it, but for small logs, scanning is fine.
+    for scanner.Scan() {
+        line := scanner.Text()
+        
+        // This keyword is based on standard MS Teams log structures
+        if strings.Contains(line, "StatusIndicatorStateService: Added") {
+            if strings.Contains(line, "Available") {
+                latestColor = "Green"
+            } else if strings.Contains(line, "Busy") || strings.Contains(line, "InAMeeting") || strings.Contains(line, "OnThePhone") || strings.Contains(line, "DoNotDisturb") || strings.Contains(line, "Presenting") {
+                latestColor = "Red"
+            } else if strings.Contains(line, "BeRightBack") || strings.Contains(line, "Away") || strings.Contains(line, "Offline") {
+                latestColor = "Yellow"
+            }
+        } else if strings.Contains(line, "reportIncomingCall") {
+            latestColor = "BlinkRed"
+        }
+    }
+    return latestColor
+}
+
+// HideWindow allows the frontend to hide the window to the tray
+func (a *App) HideWindow() {
+	runtime.WindowHide(a.ctx)
+}
+</file>
+
+<file path="go.mod">
+module teams-busy-light
+
+go 1.25.0
+
+require (
+	github.com/getlantern/systray v1.2.2
+	github.com/wailsapp/wails/v2 v2.13.0
+	go.bug.st/serial v1.8.0
+)
+
+require (
+	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3 // indirect
+	github.com/bep/debounce v1.2.1 // indirect
+	github.com/getlantern/context v0.0.0-20190109183933-c447772a6520 // indirect
+	github.com/getlantern/errors v0.0.0-20190325191628-abdb3e3e36f7 // indirect
+	github.com/getlantern/golog v0.0.0-20190830074920-4ef2e798c2d7 // indirect
+	github.com/getlantern/hex v0.0.0-20190417191902-c6586a6fe0b7 // indirect
+	github.com/getlantern/hidden v0.0.0-20190325191715-f02dbb02be55 // indirect
+	github.com/getlantern/ops v0.0.0-20190325191751-d70cb0d6f85f // indirect
+	github.com/go-ole/go-ole v1.3.0 // indirect
+	github.com/go-stack/stack v1.8.0 // indirect
+	github.com/godbus/dbus/v5 v5.1.0 // indirect
+	github.com/google/uuid v1.6.0 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
+	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
+	github.com/labstack/echo/v4 v4.13.3 // indirect
+	github.com/labstack/gommon v0.4.2 // indirect
+	github.com/leaanthony/go-ansi-parser v1.6.1 // indirect
+	github.com/leaanthony/gosod v1.0.4 // indirect
+	github.com/leaanthony/slicer v1.6.0 // indirect
+	github.com/leaanthony/u v1.1.1 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c // indirect
+	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
+	github.com/samber/lo v1.49.1 // indirect
+	github.com/tkrajina/go-reflector v0.5.8 // indirect
+	github.com/valyala/bytebufferpool v1.0.0 // indirect
+	github.com/valyala/fasttemplate v1.2.2 // indirect
+	github.com/wailsapp/go-webview2 v1.0.22 // indirect
+	github.com/wailsapp/mimetype v1.4.1 // indirect
+	golang.org/x/crypto v0.51.0 // indirect
+	golang.org/x/net v0.54.0 // indirect
+	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/text v0.37.0 // indirect
+)
+
+// replace github.com/wailsapp/wails/v2 v2.13.0 => /home/hanif-ahmadzakir/go/pkg/mod
+</file>
+
+<file path="main.go">
+package main
+
+import (
+	"embed"
+
+	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+)
+
+//go:embed all:frontend/dist
+var assets embed.FS
+
+func main() {
+	// Create an instance of the app structure
+	app := NewApp()
+
+	// Create application with options
+	err := wails.Run(&options.App{
+		Title:  "teams-busy-light",
+		Width:  1024,
+		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		OnStartup:        app.startup,
+		Bind: []interface{}{
+			app,
+		},
+	})
+
+	if err != nil {
+		println("Error:", err.Error())
+	}
+}
+</file>
+
+<file path="README.md">
+# README
+
+## About
+
+This is the official Wails Vue template.
+
+You can configure the project by editing `wails.json`. More information about the project settings can be found
+here: https://wails.io/docs/reference/project-config
+
+## Live Development
+
+To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
+server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
+and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
+to this in your browser, and you can call your Go code from devtools.
+
+## Building
+
+To build a redistributable, production mode package, use `wails build`.
+</file>
+
+<file path="wails.json">
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "teams-busy-light",
+  "outputfilename": "teams-busy-light",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "hanifahmadzakir",
+    "email": "hanifahmadzakir@gmail.com"
+  }
+}
+</file>
+
+</files>
