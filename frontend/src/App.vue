@@ -34,8 +34,11 @@ const disconnect = async () => {
   connectionStatus.value = await DisconnectSerial();
 };
 
+const activeColor = ref("");
+
 const sendManualCommand = async (color) => {
   if (isAutoMode.value) return;
+  activeColor.value = color;
   await SendCommand(color);
 };
 
@@ -177,12 +180,18 @@ onMounted(() => {
           </div>
 
           <div class="flex flex-wrap justify-center gap-8 max-w-2xl">
+            <!-- Off -->
             <button
               @click="sendManualCommand('Off')"
               class="group flex flex-col items-center focus:outline-none"
             >
               <div
-                class="w-20 h-20 rounded-full bg-gray-200 shadow-inner flex items-center justify-center transition-all group-hover:scale-105 group-hover:bg-gray-300"
+                :class="[
+                  'w-20 h-20 rounded-full bg-gray-200 shadow-inner flex items-center justify-center transition-all group-hover:scale-105 group-hover:bg-gray-300',
+                  activeColor === 'Off'
+                    ? 'ring-4 ring-gray-400 ring-offset-2 scale-105'
+                    : '',
+                ]"
               >
                 <div
                   class="w-12 h-12 rounded-full border-4 border-white opacity-50"
@@ -190,41 +199,69 @@ onMounted(() => {
               </div>
               <span class="mt-3 text-sm font-medium text-gray-500">Off</span>
             </button>
+
+            <!-- Busy (Red) -->
             <button
               @click="sendManualCommand('Red')"
               class="group flex flex-col items-center focus:outline-none"
             >
               <div
-                class="w-20 h-20 rounded-full bg-[#f44336] shadow-[0_0_15px_rgba(244,67,54,0.4)] transition-all group-hover:scale-105"
+                :class="[
+                  'w-20 h-20 rounded-full bg-[#f44336] shadow-[0_0_15px_rgba(244,67,54,0.4)] transition-all group-hover:scale-105',
+                  activeColor === 'Red'
+                    ? 'ring-4 ring-red-500 ring-offset-2 scale-105'
+                    : '',
+                ]"
               ></div>
               <span class="mt-3 text-sm font-medium text-gray-500">Busy</span>
             </button>
+
+            <!-- Available (Green) -->
             <button
               @click="sendManualCommand('Green')"
               class="group flex flex-col items-center focus:outline-none"
             >
               <div
-                class="w-20 h-20 rounded-full bg-[#8bc34a] shadow-[0_0_15px_rgba(139,195,74,0.4)] transition-all group-hover:scale-105"
+                :class="[
+                  'w-20 h-20 rounded-full bg-[#8bc34a] shadow-[0_0_15px_rgba(139,195,74,0.4)] transition-all group-hover:scale-105',
+                  activeColor === 'Green'
+                    ? 'ring-4 ring-green-500 ring-offset-2 scale-105'
+                    : '',
+                ]"
               ></div>
               <span class="mt-3 text-sm font-medium text-gray-500"
                 >Available</span
               >
             </button>
+
+            <!-- Away (Yellow) -->
             <button
               @click="sendManualCommand('Yellow')"
               class="group flex flex-col items-center focus:outline-none"
             >
               <div
-                class="w-20 h-20 rounded-full bg-[#ffeb3b] shadow-[0_0_15px_rgba(255,235,59,0.4)] transition-all group-hover:scale-105"
+                :class="[
+                  'w-20 h-20 rounded-full bg-[#ffeb3b] shadow-[0_0_15px_rgba(255,235,59,0.4)] transition-all group-hover:scale-105',
+                  activeColor === 'Yellow'
+                    ? 'ring-4 ring-yellow-400 ring-offset-2 scale-105'
+                    : '',
+                ]"
               ></div>
               <span class="mt-3 text-sm font-medium text-gray-500">Away</span>
             </button>
+
+            <!-- Calling (BlinkRed) -->
             <button
               @click="sendManualCommand('BlinkRed')"
               class="group flex flex-col items-center focus:outline-none"
             >
               <div
-                class="w-20 h-20 rounded-full bg-[#d32f2f] shadow-[0_0_20px_rgba(211,47,47,0.6)] animate-pulse transition-all group-hover:scale-105"
+                :class="[
+                  'w-20 h-20 rounded-full bg-[#d32f2f] shadow-[0_0_20px_rgba(211,47,47,0.6)] animate-pulse transition-all group-hover:scale-105',
+                  activeColor === 'BlinkRed'
+                    ? 'ring-4 ring-red-700 ring-offset-2 scale-105'
+                    : '',
+                ]"
               ></div>
               <span class="mt-3 text-sm font-medium text-gray-500"
                 >Calling</span

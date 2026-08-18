@@ -40,6 +40,19 @@ The content is organized as follows:
 </file_summary>
 
 <directory_structure>
+BusyLight/
+  .vscode/
+    extensions.json
+  include/
+    README
+  lib/
+    README
+  src/
+    main.cpp
+  test/
+    README
+  .gitignore
+  platformio.ini
 frontend/
   src/
     assets/
@@ -48,8 +61,6 @@ frontend/
         OFL.txt
       images/
         logo-universal.png
-    components/
-      HelloWorld.vue
     App.vue
     main.js
     style.css
@@ -71,12 +82,327 @@ frontend/
 app.go
 go.mod
 main.go
+port_unix.go
+port_windows.go
 README.md
+tray_unix.go
+tray_windows.go
 wails.json
 </directory_structure>
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="BusyLight/.vscode/extensions.json">
+{
+    // See http://go.microsoft.com/fwlink/?LinkId=827846
+    // for the documentation about the extensions.json format
+    "recommendations": [
+        "platformio.platformio-ide"
+    ],
+    "unwantedRecommendations": [
+        "ms-vscode.cpptools-extension-pack"
+    ]
+}
+</file>
+
+<file path="BusyLight/include/README">
+This directory is intended for project header files.
+
+A header file is a file containing C declarations and macro definitions
+to be shared between several project source files. You request the use of a
+header file in your project source file (C, C++, etc) located in `src` folder
+by including it, with the C preprocessing directive `#include'.
+
+```src/main.c
+
+#include "header.h"
+
+int main (void)
+{
+ ...
+}
+```
+
+Including a header file produces the same results as copying the header file
+into each source file that needs it. Such copying would be time-consuming
+and error-prone. With a header file, the related declarations appear
+in only one place. If they need to be changed, they can be changed in one
+place, and programs that include the header file will automatically use the
+new version when next recompiled. The header file eliminates the labor of
+finding and changing all the copies as well as the risk that a failure to
+find one copy will result in inconsistencies within a program.
+
+In C, the convention is to give header files names that end with `.h'.
+
+Read more about using header files in official GCC documentation:
+
+* Include Syntax
+* Include Operation
+* Once-Only Headers
+* Computed Includes
+
+https://gcc.gnu.org/onlinedocs/cpp/Header-Files.html
+</file>
+
+<file path="BusyLight/lib/README">
+This directory is intended for project specific (private) libraries.
+PlatformIO will compile them to static libraries and link into the executable file.
+
+The source code of each library should be placed in a separate directory
+("lib/your_library_name/[Code]").
+
+For example, see the structure of the following example libraries `Foo` and `Bar`:
+
+|--lib
+|  |
+|  |--Bar
+|  |  |--docs
+|  |  |--examples
+|  |  |--src
+|  |     |- Bar.c
+|  |     |- Bar.h
+|  |  |- library.json (optional. for custom build options, etc) https://docs.platformio.org/page/librarymanager/config.html
+|  |
+|  |--Foo
+|  |  |- Foo.c
+|  |  |- Foo.h
+|  |
+|  |- README --> THIS FILE
+|
+|- platformio.ini
+|--src
+   |- main.c
+
+Example contents of `src/main.c` using Foo and Bar:
+```
+#include <Foo.h>
+#include <Bar.h>
+
+int main (void)
+{
+  ...
+}
+
+```
+
+The PlatformIO Library Dependency Finder will find automatically dependent
+libraries by scanning project source files.
+
+More information about PlatformIO Library Dependency Finder
+- https://docs.platformio.org/page/librarymanager/ldf.html
+</file>
+
+<file path="BusyLight/src/main.cpp">
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET -1
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+// LED Pins (Wemos D1 mapping)
+const int pinGreen = D5;
+const int pinYellow = D6;
+const int pinRed = D7;
+
+// --- Function Prototypes for PlatformIO ---
+void processCommand(String cmd);
+void turnOnLed(int activePin);
+void turnOffAllLeds();
+void updateDisplay(String text);
+
+// Built-in LED for visual feedback (Active LOW on Wemos D1)
+const int pinBuiltIn = LED_BUILTIN; 
+
+void setup() {
+  Serial.begin(9600); // 9600 baud to match the Go backend
+  
+  pinMode(pinGreen, OUTPUT);
+  pinMode(pinYellow, OUTPUT);
+  pinMode(pinRed, OUTPUT);
+  pinMode(pinBuiltIn, OUTPUT);
+  
+  // Keep built-in LED off (Active LOW means HIGH is off)
+  digitalWrite(pinBuiltIn, HIGH);
+  
+  // Initialize OLED
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println("ERROR: SSD1306 OLED allocation failed");
+    for(;;);
+  }
+  
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(SSD1306_WHITE);
+  updateDisplay("Starting Up");
+  
+  // Tell the Wails App that the board is ready
+  Serial.println("SYSTEM: Wemos D1 Initialized and Ready.");
+  
+  // Test LEDs on boot
+  turnOnLed(pinGreen); delay(300);
+  turnOnLed(pinYellow); delay(300);
+  turnOnLed(pinRed); delay(300);
+  turnOffAllLeds();
+  
+  updateDisplay("Waiting...");
+}
+
+void loop() {
+  // Check if Wails app sent a command over USB Serial
+  if (Serial.available() > 0) {
+    String command = Serial.readStringUntil('\n');
+    command.trim(); // Remove any whitespace/carriage returns
+    
+    if (command.length() > 0) {
+      // Flash built-in LED to indicate data was received
+      digitalWrite(pinBuiltIn, LOW); 
+      
+      processCommand(command);
+      
+      delay(50); // Short delay for visible blink
+      digitalWrite(pinBuiltIn, HIGH);
+    }
+  }
+}
+
+void processCommand(String cmd) {
+  if (cmd == "Green") {
+    turnOnLed(pinGreen);
+    updateDisplay("Available");
+    Serial.println("DEBUG: Executed [Green] -> Available");
+  } 
+  else if (cmd == "Red") {
+    turnOnLed(pinRed);
+    updateDisplay("Busy / DND");
+    Serial.println("DEBUG: Executed [Red] -> Busy / DND");
+  } 
+  else if (cmd == "Yellow") {
+    turnOnLed(pinYellow);
+    updateDisplay("Away");
+    Serial.println("DEBUG: Executed [Yellow] -> Away");
+  } 
+  else if (cmd == "BlinkRed") {
+    Serial.println("DEBUG: Executed [BlinkRed] -> Incoming Call!");
+    updateDisplay("CALLING!");
+    
+    // Blink BOTH the external Red LED and the Built-in LED 5 times
+    for(int i = 0; i < 5; i++) {
+      turnOnLed(pinRed); 
+      digitalWrite(pinBuiltIn, LOW); // Turn ON built-in LED (Active LOW)
+      delay(200);
+      
+      turnOffAllLeds(); 
+      digitalWrite(pinBuiltIn, HIGH); // Turn OFF built-in LED
+      delay(200);
+    }
+    
+    turnOnLed(pinRed);              // Return external LED to solid red
+    digitalWrite(pinBuiltIn, HIGH); // Ensure built-in LED stays OFF after the call rings
+  }
+  else if (cmd == "Off") {
+    turnOffAllLeds();
+    updateDisplay("");
+    Serial.println("DEBUG: Executed [Off] -> All LEDs off");
+  }
+  else if (cmd == "White") {
+    turnOnLed(pinGreen); 
+    updateDisplay("Connected!");
+    Serial.println("DEBUG: Executed [White] -> Connection Established");
+  }
+  else {
+    Serial.println("DEBUG: Unknown command received: " + cmd);
+  }
+}
+
+void turnOnLed(int activePin) {
+  turnOffAllLeds();
+  digitalWrite(activePin, HIGH);
+}
+
+void turnOffAllLeds() {
+  digitalWrite(pinGreen, LOW);
+  digitalWrite(pinYellow, LOW);
+  digitalWrite(pinRed, LOW);
+}
+
+void updateDisplay(String text) {
+  display.clearDisplay();
+  display.setCursor(0, 20);
+  
+  // Center text roughly depending on length (approx 12 pixels per char at size 2)
+  int cursorX = (SCREEN_WIDTH - (text.length() * 12)) / 2;
+  if (cursorX < 0) cursorX = 0;
+  
+  display.setCursor(cursorX, 24);
+  display.println(text);
+  display.display();
+}
+</file>
+
+<file path="BusyLight/test/README">
+This directory is intended for PlatformIO Test Runner and project tests.
+
+Unit Testing is a software testing method by which individual units of
+source code, sets of one or more MCU program modules together with associated
+control data, usage procedures, and operating procedures, are tested to
+determine whether they are fit for use. Unit testing finds problems early
+in the development cycle.
+
+More information about PlatformIO Unit Testing:
+- https://docs.platformio.org/en/latest/advanced/unit-testing/index.html
+
+#include <Arduino.h>
+
+unsigned long previousMillis = 0;
+const long interval = 1000;
+
+void setup(){
+  Serial.begin(9600);
+  delay(1000);
+}
+
+void loop(){
+
+  unsigned long currentMillis = millis();
+  if(currentMillis - previousMillis >= interval){
+    previousMillis = currentMillis;
+    Serial.println("This is from Wemos D1");
+  }
+}
+</file>
+
+<file path="BusyLight/.gitignore">
+.pio
+.vscode/.browse.c_cpp.db*
+.vscode/c_cpp_properties.json
+.vscode/launch.json
+.vscode/ipch
+</file>
+
+<file path="BusyLight/platformio.ini">
+; PlatformIO Project Configuration File
+;
+;   Build options: build flags, source filter
+;   Upload options: custom upload port, speed and extra flags
+;   Library options: dependencies, extra library storages
+;   Advanced options: extra scripting
+;
+; Please visit documentation for the other options and examples
+; https://docs.platformio.org/page/projectconf.html
+
+[env:d1_mini]
+platform = espressif8266
+board = d1_mini
+framework = arduino
+monitor_speed = 9600
+lib_deps =
+    adafruit/Adafruit SSD1306@^2.5.9
+    adafruit/Adafruit GFX Library@^1.11.9
+</file>
 
 <file path="frontend/src/assets/fonts/OFL.txt">
 Copyright 2016 The Nunito Project Authors (contact@sansoxygen.com),
@@ -174,97 +500,256 @@ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 </file>
 
-<file path="frontend/src/components/HelloWorld.vue">
-<script setup>
-import {reactive} from 'vue'
-import {Greet} from '../../wailsjs/go/main/App'
+<file path="frontend/src/main.js">
+import {createApp} from 'vue'
+import App from './App.vue'
+import './style.css';
 
-const data = reactive({
-  name: "",
-  resultText: "Please enter your name below 👇",
-})
+createApp(App).mount('#app')
+</file>
 
-function greet() {
-  Greet(data.name).then(result => {
-    data.resultText = result
-  })
+<file path="frontend/index.html">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>teams-busy-light</title>
+</head>
+<body>
+<div id="app"></div>
+<script src="./src/main.js" type="module"></script>
+</body>
+</html>
+</file>
+
+<file path="frontend/README.md">
+# Vue 3 + Vite
+
+This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs,
+check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+
+## Recommended IDE Setup
+
+- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
+</file>
+
+<file path=".gitignore">
+build/bin
+node_modules
+frontend/dist
+teams-busy-light/repomix-output.xml
+</file>
+
+<file path="main.go">
+package main
+
+import (
+	"embed"
+
+	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+)
+
+//go:embed all:frontend/dist
+var assets embed.FS
+
+func main() {
+	// Create an instance of the app structure
+	app := NewApp()
+
+	// Create application with options
+	err := wails.Run(&options.App{
+		Title:  "teams-busy-light",
+		Width:  1024,
+		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		OnStartup:        app.startup,
+		Bind: []interface{}{
+			app,
+		},
+	})
+
+	if err != nil {
+		println("Error:", err.Error())
+	}
+}
+</file>
+
+<file path="port_unix.go">
+//go:build !windows
+
+package main
+
+// scanOSSpecificPorts is a no-op on non-Windows platforms as the standard
+// serial enumerator handles Unix device paths adequately.
+func scanOSSpecificPorts(portMap map[string]bool) {
+    // No registry to scan on Linux/macOS
+}
+</file>
+
+<file path="port_windows.go">
+//go:build windows
+
+package main
+
+import (
+    "golang.org/x/sys/windows/registry"
+)
+
+// scanOSSpecificPorts checks the Windows registry for available COM ports
+func scanOSSpecificPorts(portMap map[string]bool) {
+    key, err := registry.OpenKey(
+        registry.LOCAL_MACHINE,
+        `HARDWARE\DEVICEMAP\SERIALCOMM`,
+        registry.QUERY_VALUE,
+    )
+    if err != nil {
+        return
+    }
+    defer key.Close()
+
+    names, err := key.ReadValueNames(0)
+    if err != nil {
+        return
+    }
+
+    for _, name := range names {
+        value, _, err := key.GetStringValue(name)
+        if err == nil && value != "" {
+            portMap[value] = true
+        }
+    }
+}
+</file>
+
+<file path="README.md">
+# README
+
+## About
+
+This is the official Wails Vue template.
+
+You can configure the project by editing `wails.json`. More information about the project settings can be found
+here: https://wails.io/docs/reference/project-config
+
+## Live Development
+
+To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
+server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
+and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
+to this in your browser, and you can call your Go code from devtools.
+
+## Building
+
+To build a redistributable, production mode package, use `wails build`.
+</file>
+
+<file path="tray_unix.go">
+//go:build !windows
+
+package main
+
+import "fmt"
+
+// setupSystemTray is a no-op on Linux to prevent GTK main loop conflicts with Wails
+func setupSystemTray(a *App) {
+	fmt.Println("System tray disabled on Linux during development.")
 }
 
-</script>
+// HideWindow is mocked on Linux so the app doesn't disappear permanently
+func (a *App) HideWindow() {
+	fmt.Println("Hide to tray ignored on Linux (no tray available).")
+}
+</file>
 
-<template>
-  <main>
-    <div id="result" class="result">{{ data.resultText }}</div>
-    <div id="input" class="input-box">
-      <input id="name" v-model="data.name" autocomplete="off" class="input" type="text"/>
-      <button class="btn" @click="greet">Greet</button>
-    </div>
-  </main>
-</template>
+<file path="tray_windows.go">
+//go:build windows
 
-<style scoped>
-.result {
-  height: 20px;
-  line-height: 20px;
-  margin: 1.5rem auto;
+package main
+
+import (
+	"github.com/getlantern/systray"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
+)
+
+func setupSystemTray(a *App) {
+	go systray.Run(a.onReady, a.onExit)
 }
 
-.input-box .btn {
-  width: 60px;
-  height: 30px;
-  line-height: 30px;
-  border-radius: 3px;
-  border: none;
-  margin: 0 0 0 20px;
-  padding: 0 8px;
-  cursor: pointer;
+// --- SYSTEM TRAY LOGIC ---
+func (a *App) onReady() {
+	systray.SetTitle("Busy Light")
+	systray.SetTooltip("Teams Busy Light Controller")
+	
+	mOpen := systray.AddMenuItem("Open", "Open the application UI")
+	mQuit := systray.AddMenuItem("Quit", "Quit the application")
+
+	for {
+		select {
+		case <-mOpen.ClickedCh:
+			runtime.WindowShow(a.ctx)
+		case <-mQuit.ClickedCh:
+			systray.Quit()
+			runtime.Quit(a.ctx)
+			return
+		}
+	}
 }
 
-.input-box .btn:hover {
-  background-image: linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%);
-  color: #333333;
+func (a *App) onExit() {
+	// Clean up tray icon
 }
 
-.input-box .input {
-  border: none;
-  border-radius: 3px;
-  outline: none;
-  height: 30px;
-  line-height: 30px;
-  padding: 0 10px;
-  background-color: rgba(240, 240, 240, 1);
-  -webkit-font-smoothing: antialiased;
+// HideWindow allows the frontend to hide the window to the tray
+func (a *App) HideWindow() {
+	runtime.WindowHide(a.ctx)
 }
+</file>
 
-.input-box .input:hover {
-  border: none;
-  background-color: rgba(255, 255, 255, 1);
+<file path="wails.json">
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "teams-busy-light",
+  "outputfilename": "teams-busy-light",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "hanifahmadzakir",
+    "email": "hanifahmadzakir@gmail.com"
+  }
 }
-
-.input-box .input:focus {
-  border: none;
-  background-color: rgba(255, 255, 255, 1);
-}
-</style>
 </file>
 
 <file path="frontend/src/App.vue">
 <script setup>
 import { ref, onMounted } from "vue";
-// Wails automatically generates standard JS bindings here when you build/dev
 import {
   GetPorts,
   ConnectSerial,
+  DisconnectSerial,
   SendCommand,
   SetAutoMode,
   HideWindow,
 } from "../wailsjs/go/main/App";
+import { EventsOn } from "../wailsjs/runtime/runtime";
 
 const ports = ref([]);
 const selectedPort = ref("");
 const connectionStatus = ref("Disconnected");
 const logPath = ref("");
 const isAutoMode = ref(false);
+const activeTab = ref("hardware"); // Default to hardware to see the monitor easily
+
+// Serial Monitor State
+const showSerialMonitor = ref(false);
+const serialLogs = ref([]);
 
 const refreshPorts = async () => {
   ports.value = await GetPorts();
@@ -275,8 +760,15 @@ const connect = async () => {
   connectionStatus.value = await ConnectSerial(selectedPort.value);
 };
 
+const disconnect = async () => {
+  connectionStatus.value = await DisconnectSerial();
+};
+
+const activeColor = ref("");
+
 const sendManualCommand = async (color) => {
-  if (isAutoMode.value) return; // Prevent manual override if auto is on
+  if (isAutoMode.value) return;
+  activeColor.value = color;
   await SendCommand(color);
 };
 
@@ -289,140 +781,402 @@ const minimizeToTray = () => {
   HideWindow();
 };
 
+const clearLogs = () => {
+  serialLogs.value = [];
+};
+
 onMounted(() => {
   refreshPorts();
+
+  // Listen for incoming serial data from the Go backend
+  EventsOn("serial-data", (data) => {
+    serialLogs.value.push(data);
+
+    // Auto-scroll logic (keep maximum 100 lines to prevent memory issues)
+    if (serialLogs.value.length > 100) {
+      serialLogs.value.shift();
+    }
+  });
 });
 </script>
 
 <template>
-  <main class="p-6 font-sans text-gray-800">
-    <h1 class="text-2xl font-bold mb-4">Teams Busy Light</h1>
-
-    <!-- Port Selection -->
-    <div class="mb-6 border p-4 rounded bg-gray-50">
-      <h2 class="font-semibold mb-2">Hardware Setup</h2>
-      <select v-model="selectedPort" class="border p-1 mr-2">
-        <option disabled value="">Select COM Port</option>
-        <option v-for="port in ports" :key="port" :value="port">
-          {{ port }}
-        </option>
-      </select>
-      <button @click="refreshPorts" class="bg-blue-200 px-3 py-1 mr-2 rounded">
-        Refresh
-      </button>
-      <button @click="connect" class="bg-blue-500 text-white px-3 py-1 rounded">
-        Connect
-      </button>
-      <span class="ml-3 text-sm">{{ connectionStatus }}</span>
-    </div>
-
-    <!-- Mode Toggle -->
-    <div class="mb-6 border p-4 rounded">
-      <h2 class="font-semibold mb-2">Operating Mode</h2>
-      <label class="flex items-center space-x-2">
-        <input type="checkbox" v-model="isAutoMode" @change="toggleAutoMode" />
-        <span>Enable Automatic Mode (Teams Sync)</span>
-      </label>
-
-      <div v-if="isAutoMode" class="mt-4">
-        <label class="block text-sm mb-1"
-          >Teams Log Path (Leave blank for default):</label
-        >
-        <input
-          v-model="logPath"
-          type="text"
-          placeholder="%localappdata%\Packages\MSTeams_8wekyb3d8bbwe\..."
-          class="w-full border p-2 text-sm"
-        />
-        <button
-          @click="toggleAutoMode"
-          class="mt-2 bg-green-500 text-white px-3 py-1 rounded text-sm"
-        >
-          Update Path
-        </button>
-      </div>
-    </div>
-
-    <!-- Manual Controls -->
-    <div
-      class="mb-6 border p-4 rounded"
-      :class="{ 'opacity-50 pointer-events-none': isAutoMode }"
+  <div
+    class="flex h-screen w-screen bg-gray-50 font-sans text-gray-800 overflow-hidden"
+  >
+    <!-- LEFT SIDEBAR -->
+    <aside
+      class="w-56 bg-[#2d3238] flex flex-col justify-between z-10 shadow-lg"
     >
-      <h2 class="font-semibold mb-2">Manual Override</h2>
-      <div class="flex space-x-2">
-        <button
-          @click="sendManualCommand('Green')"
-          class="bg-green-500 text-white px-4 py-2 rounded"
-        >
-          Available
-        </button>
-        <button
-          @click="sendManualCommand('Red')"
-          class="bg-red-500 text-white px-4 py-2 rounded"
-        >
-          Busy
-        </button>
-        <button
-          @click="sendManualCommand('Yellow')"
-          class="bg-yellow-500 text-white px-4 py-2 rounded"
-        >
-          Away
-        </button>
-        <button
-          @click="sendManualCommand('BlinkRed')"
-          class="bg-red-700 text-white px-4 py-2 rounded"
-        >
-          Calling
-        </button>
-      </div>
-    </div>
+      <div>
+        <div class="h-16 flex items-center px-6 bg-[#25292e]">
+          <div class="flex space-x-1 items-center">
+            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+            <h1 class="text-white font-semibold text-lg ml-2 tracking-wide">
+              BUSY LIGHT
+            </h1>
+          </div>
+        </div>
 
-    <!-- Background running -->
-    <button
-      @click="minimizeToTray"
-      class="text-sm underline text-gray-500 hover:text-gray-700"
-    >
-      Minimize to System Tray
-    </button>
-  </main>
+        <nav class="mt-4 flex flex-col">
+          <button
+            @click="activeTab = 'manual'"
+            :class="[
+              'text-left px-6 py-3 transition-colors border-l-4',
+              activeTab === 'manual'
+                ? 'bg-[#3b4148] text-white border-green-500'
+                : 'text-gray-400 border-transparent hover:bg-[#363b41] hover:text-gray-200',
+            ]"
+          >
+            Solid Color
+          </button>
+
+          <button
+            @click="activeTab = 'auto'"
+            :class="[
+              'text-left px-6 py-3 transition-colors border-l-4',
+              activeTab === 'auto'
+                ? 'bg-[#3b4148] text-white border-green-500'
+                : 'text-gray-400 border-transparent hover:bg-[#363b41] hover:text-gray-200',
+            ]"
+          >
+            Teams Sync
+          </button>
+
+          <button
+            @click="activeTab = 'hardware'"
+            :class="[
+              'text-left px-6 py-3 transition-colors border-l-4',
+              activeTab === 'hardware'
+                ? 'bg-[#3b4148] text-white border-green-500'
+                : 'text-gray-400 border-transparent hover:bg-[#363b41] hover:text-gray-200',
+            ]"
+          >
+            Settings
+          </button>
+        </nav>
+      </div>
+
+      <button
+        @click="minimizeToTray"
+        class="px-6 py-4 text-sm text-gray-400 hover:text-white hover:bg-[#363b41] text-left transition-colors flex items-center"
+      >
+        <svg
+          class="w-4 h-4 mr-2"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 9l-7 7-7-7"
+          ></path>
+        </svg>
+        Minimize to Tray
+      </button>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col relative bg-white">
+      <header
+        class="h-16 border-b flex items-center justify-between px-8 bg-white"
+      >
+        <h2 class="text-xl font-light text-gray-600 capitalize">
+          {{
+            activeTab === "manual"
+              ? "Select Color"
+              : activeTab === "auto"
+                ? "Teams Synchronization"
+                : "Device Settings"
+          }}
+        </h2>
+      </header>
+
+      <div class="p-8 flex-1 overflow-y-auto pb-16">
+        <!-- 1. MANUAL CONTROL -->
+        <div
+          v-show="activeTab === 'manual'"
+          class="flex flex-col items-center justify-center h-full pt-10"
+          :class="{ 'opacity-40 pointer-events-none': isAutoMode }"
+        >
+          <div
+            v-if="isAutoMode"
+            class="absolute top-20 bg-yellow-100 text-yellow-800 px-4 py-2 rounded shadow-sm text-sm"
+          >
+            Manual control is disabled while Teams Sync is active.
+          </div>
+
+          <div class="flex flex-wrap justify-center gap-8 max-w-2xl">
+            <!-- Off -->
+            <button
+              @click="sendManualCommand('Off')"
+              class="group flex flex-col items-center focus:outline-none"
+            >
+              <div
+                :class="[
+                  'w-20 h-20 rounded-full bg-gray-200 shadow-inner flex items-center justify-center transition-all group-hover:scale-105 group-hover:bg-gray-300',
+                  activeColor === 'Off'
+                    ? 'ring-4 ring-gray-400 ring-offset-2 scale-105'
+                    : '',
+                ]"
+              >
+                <div
+                  class="w-12 h-12 rounded-full border-4 border-white opacity-50"
+                ></div>
+              </div>
+              <span class="mt-3 text-sm font-medium text-gray-500">Off</span>
+            </button>
+
+            <!-- Busy (Red) -->
+            <button
+              @click="sendManualCommand('Red')"
+              class="group flex flex-col items-center focus:outline-none"
+            >
+              <div
+                :class="[
+                  'w-20 h-20 rounded-full bg-[#f44336] shadow-[0_0_15px_rgba(244,67,54,0.4)] transition-all group-hover:scale-105',
+                  activeColor === 'Red'
+                    ? 'ring-4 ring-red-500 ring-offset-2 scale-105'
+                    : '',
+                ]"
+              ></div>
+              <span class="mt-3 text-sm font-medium text-gray-500">Busy</span>
+            </button>
+
+            <!-- Available (Green) -->
+            <button
+              @click="sendManualCommand('Green')"
+              class="group flex flex-col items-center focus:outline-none"
+            >
+              <div
+                :class="[
+                  'w-20 h-20 rounded-full bg-[#8bc34a] shadow-[0_0_15px_rgba(139,195,74,0.4)] transition-all group-hover:scale-105',
+                  activeColor === 'Green'
+                    ? 'ring-4 ring-green-500 ring-offset-2 scale-105'
+                    : '',
+                ]"
+              ></div>
+              <span class="mt-3 text-sm font-medium text-gray-500"
+                >Available</span
+              >
+            </button>
+
+            <!-- Away (Yellow) -->
+            <button
+              @click="sendManualCommand('Yellow')"
+              class="group flex flex-col items-center focus:outline-none"
+            >
+              <div
+                :class="[
+                  'w-20 h-20 rounded-full bg-[#ffeb3b] shadow-[0_0_15px_rgba(255,235,59,0.4)] transition-all group-hover:scale-105',
+                  activeColor === 'Yellow'
+                    ? 'ring-4 ring-yellow-400 ring-offset-2 scale-105'
+                    : '',
+                ]"
+              ></div>
+              <span class="mt-3 text-sm font-medium text-gray-500">Away</span>
+            </button>
+
+            <!-- Calling (BlinkRed) -->
+            <button
+              @click="sendManualCommand('BlinkRed')"
+              class="group flex flex-col items-center focus:outline-none"
+            >
+              <div
+                :class="[
+                  'w-20 h-20 rounded-full bg-[#d32f2f] shadow-[0_0_20px_rgba(211,47,47,0.6)] animate-pulse transition-all group-hover:scale-105',
+                  activeColor === 'BlinkRed'
+                    ? 'ring-4 ring-red-700 ring-offset-2 scale-105'
+                    : '',
+                ]"
+              ></div>
+              <span class="mt-3 text-sm font-medium text-gray-500"
+                >Calling</span
+              >
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. AUTO MODE (Teams Sync) -->
+        <div v-show="activeTab === 'auto'" class="max-w-xl mx-auto mt-6">
+          <div class="bg-gray-50 p-6 rounded-lg border">
+            <label class="flex items-center space-x-3 cursor-pointer mb-6">
+              <input
+                type="checkbox"
+                v-model="isAutoMode"
+                @change="toggleAutoMode"
+                class="w-5 h-5 text-green-500 rounded border-gray-300 focus:ring-green-400"
+              />
+              <span class="text-gray-700 font-medium text-lg"
+                >Enable MS Teams Sync</span
+              >
+            </label>
+
+            <div
+              class="transition-opacity"
+              :class="
+                isAutoMode ? 'opacity-100' : 'opacity-40 pointer-events-none'
+              "
+            >
+              <p class="text-sm text-gray-500 mb-2">
+                Override Default Teams Log Path (Optional):
+              </p>
+              <input
+                v-model="logPath"
+                type="text"
+                placeholder="%localappdata%\Packages\MSTeams_8wekyb3d8bbwe\LocalCache\Microsoft\MSTeams\Logs"
+                class="w-full border-gray-300 rounded shadow-sm p-3 text-sm focus:border-green-500 focus:ring focus:ring-green-200"
+              />
+              <button
+                @click="toggleAutoMode"
+                class="mt-4 bg-[#8bc34a] hover:bg-[#7cb342] text-white px-6 py-2 rounded shadow transition-colors text-sm font-medium"
+              >
+                Apply Path Update
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. HARDWARE SETTINGS -->
+        <div v-show="activeTab === 'hardware'" class="max-w-2xl mx-auto mt-6">
+          <div class="bg-gray-50 p-6 rounded-lg border mb-6">
+            <h3 class="text-gray-700 font-medium mb-4">Serial Connection</h3>
+
+            <div class="flex space-x-3 mb-2">
+              <select
+                v-model="selectedPort"
+                :disabled="connectionStatus.includes('Connected')"
+                class="flex-1 border-gray-300 rounded shadow-sm p-2 text-sm focus:border-green-500 focus:ring focus:ring-green-200 disabled:bg-gray-200 disabled:text-gray-400"
+              >
+                <option disabled value="">Select COM Port</option>
+                <option v-for="port in ports" :key="port" :value="port">
+                  {{ port }}
+                </option>
+              </select>
+
+              <button
+                @click="refreshPorts"
+                :disabled="connectionStatus.includes('Connected')"
+                class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded shadow-sm transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Refresh
+              </button>
+
+              <!-- Show Connect if disconnected -->
+              <button
+                v-if="!connectionStatus.includes('Connected')"
+                @click="connect"
+                class="bg-[#2d3238] hover:bg-[#3b4148] text-white px-6 py-2 rounded shadow transition-colors text-sm font-medium"
+              >
+                Connect
+              </button>
+
+              <!-- Show Disconnect if connected -->
+              <button
+                v-else
+                @click="disconnect"
+                class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded shadow transition-colors text-sm font-medium"
+              >
+                Disconnect
+              </button>
+            </div>
+          </div>
+
+          <!-- DEBUGGING / SERIAL MONITOR -->
+          <div class="bg-gray-50 p-6 rounded-lg border">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-gray-700 font-medium">Serial Monitor</h3>
+              <button
+                @click="showSerialMonitor = !showSerialMonitor"
+                class="text-sm text-green-600 hover:text-green-700 font-medium transition-colors"
+              >
+                {{ showSerialMonitor ? "Hide Monitor" : "Show Monitor" }}
+              </button>
+            </div>
+
+            <div v-if="showSerialMonitor">
+              <div
+                class="bg-[#1e1e1e] text-[#d4d4d4] font-mono text-xs p-4 rounded-lg h-64 overflow-y-auto shadow-inner break-all flex flex-col-reverse"
+              >
+                <!-- flex-col-reverse makes new messages appear at the bottom naturally if we reverse the array -->
+                <div class="flex flex-col">
+                  <div
+                    v-if="serialLogs.length === 0"
+                    class="text-gray-500 italic py-2"
+                  >
+                    Waiting for incoming serial data...
+                  </div>
+                  <div
+                    v-for="(log, index) in serialLogs"
+                    :key="index"
+                    class="py-0.5 border-b border-[#333] last:border-0"
+                  >
+                    <span class="text-gray-500 mr-2"
+                      >[{{ new Date().toLocaleTimeString() }}]</span
+                    >
+                    {{ log }}
+                  </div>
+                </div>
+              </div>
+              <div class="mt-3 flex justify-end">
+                <button
+                  @click="clearLogs"
+                  class="text-xs text-gray-500 hover:text-red-500 transition-colors border border-gray-300 px-3 py-1 rounded"
+                >
+                  Clear Output
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM STATUS BAR -->
+      <footer
+        class="absolute bottom-0 w-full h-10 bg-[#363b41] flex items-center px-6 border-t border-[#464c54]"
+      >
+        <div class="flex items-center space-x-2">
+          <svg
+            v-if="connectionStatus.includes('Connected')"
+            class="w-4 h-4 text-green-400"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+              clip-rule="evenodd"
+            ></path>
+          </svg>
+          <svg
+            v-else
+            class="w-4 h-4 text-gray-400"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+              clip-rule="evenodd"
+            ></path>
+          </svg>
+          <span class="text-xs text-gray-300">{{
+            connectionStatus === "Disconnected"
+              ? "Device disconnected"
+              : connectionStatus
+          }}</span>
+        </div>
+      </footer>
+    </main>
+  </div>
 </template>
 </file>
 
-<file path="frontend/src/main.js">
-import {createApp} from 'vue'
-import App from './App.vue'
-import './style.css';
-
-createApp(App).mount('#app')
-</file>
-
 <file path="frontend/src/style.css">
-html {
-    background-color: rgba(27, 38, 54, 1);
-    text-align: center;
-    color: white;
-}
-
-body {
-    margin: 0;
-    color: white;
-    font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
-}
-
-@font-face {
-    font-family: "Nunito";
-    font-style: normal;
-    font-weight: 400;
-    src: local(""),
-    url("assets/fonts/nunito-v16-latin-regular.woff2") format("woff2");
-}
-
-#app {
-    height: 100vh;
-    text-align: center;
-}
+@import "tailwindcss";
 </file>
 
 <file path="frontend/wailsjs/go/main/App.d.ts">
@@ -430,6 +1184,8 @@ body {
 // This file is automatically generated. DO NOT EDIT
 
 export function ConnectSerial(arg1:string):Promise<string>;
+
+export function DisconnectSerial():Promise<string>;
 
 export function GetPorts():Promise<Array<string>>;
 
@@ -447,6 +1203,10 @@ export function SetAutoMode(arg1:boolean,arg2:string):Promise<string>;
 
 export function ConnectSerial(arg1) {
   return window['go']['main']['App']['ConnectSerial'](arg1);
+}
+
+export function DisconnectSerial() {
+  return window['go']['main']['App']['DisconnectSerial']();
 }
 
 export function GetPorts() {
@@ -1127,21 +1887,6 @@ export function RemoveNotification(identifier) {
 }
 </file>
 
-<file path="frontend/index.html">
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>teams-busy-light</title>
-</head>
-<body>
-<div id="app"></div>
-<script src="./src/main.js" type="module"></script>
-</body>
-</html>
-</file>
-
 <file path="frontend/package.json">
 {
   "name": "frontend",
@@ -1157,60 +1902,50 @@ export function RemoveNotification(identifier) {
     "vue": "^3.5.0"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-vue": "^6.0.0",
+    "autoprefixer": "^10.5.4",
+    "postcss": "^8.5.26",
+    "tailwindcss": "^4.3.3",
     "vite": "^7.0.0"
   }
 }
 </file>
 
 <file path="frontend/package.json.md5">
-71e741a4044d4a0f11cff668ef3f7ad4
-</file>
-
-<file path="frontend/README.md">
-# Vue 3 + Vite
-
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs,
-check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
-
-## Recommended IDE Setup
-
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
+912f5a3b8775e197d1e58af1854bb409
 </file>
 
 <file path="frontend/vite.config.js">
-import {defineConfig} from 'vite'
+import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import tailwindcss from '@tailwindcss/vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue()]
+  plugins: [
+    vue(),
+    tailwindcss(),
+  ],
 })
-</file>
-
-<file path=".gitignore">
-build/bin
-node_modules
-frontend/dist
 </file>
 
 <file path="app.go">
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
-	"bufio"
 
-	"github.com/getlantern/systray"
+	// "github.com/getlantern/systray"
+	// "github.com/wailsapp/wails/v2/pkg/runtime"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.bug.st/serial"
-	
-	
 )
 
 type App struct {
@@ -1232,32 +1967,33 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 
 	// Initialize System Tray in a separate goroutine
-	go systray.Run(a.onReady, a.onExit)
+	// go systray.Run(a.onReady, a.onExit)
+	setupSystemTray(a)
 }
 
 // --- SYSTEM TRAY LOGIC ---
-func (a *App) onReady() {
-	systray.SetTitle("Busy Light")
-	systray.SetTooltip("Teams Busy Light Controller")
+// func (a *App) onReady() {
+// 	systray.SetTitle("Busy Light")
+// 	systray.SetTooltip("Teams Busy Light Controller")
 	
-	mOpen := systray.AddMenuItem("Open", "Open the application UI")
-	mQuit := systray.AddMenuItem("Quit", "Quit the application")
+// 	mOpen := systray.AddMenuItem("Open", "Open the application UI")
+// 	mQuit := systray.AddMenuItem("Quit", "Quit the application")
 
-	for {
-		select {
-		case <-mOpen.ClickedCh:
-			runtime.WindowShow(a.ctx)
-		case <-mQuit.ClickedCh:
-			systray.Quit()
-			runtime.Quit(a.ctx)
-			return
-		}
-	}
-}
+// 	for {
+// 		select {
+// 		case <-mOpen.ClickedCh:
+// 			runtime.WindowShow(a.ctx)
+// 		case <-mQuit.ClickedCh:
+// 			systray.Quit()
+// 			runtime.Quit(a.ctx)
+// 			return
+// 		}
+// 	}
+// }
 
-func (a *App) onExit() {
-	// Clean up tray icon
-}
+// func (a *App) onExit() {
+// 	// Clean up tray icon
+// }
 
 // --- IPC METHODS CALLED BY VUE ---
 
@@ -1287,13 +2023,58 @@ func (a *App) GetPorts() []string {
 
 // ConnectSerial connects to the selected Wemos D1 port
 func (a *App) ConnectSerial(portName string) string {
+	// Close any existing connection before opening a new one
+	if a.serialPort != nil {
+		a.serialPort.Close()
+	}
+
 	mode := &serial.Mode{BaudRate: 9600}
 	port, err := serial.Open(portName, mode)
 	if err != nil {
 		return fmt.Sprintf("Error: %v", err)
 	}
 	a.serialPort = port
-	return "Connected"
+
+	// Start a background goroutine to read incoming serial data
+	go a.listenSerial()
+
+	return "Connected to " + portName
+}
+
+// listenSerial continuously reads from the serial port and sends data to the frontend
+func (a *App) listenSerial() {
+	if a.serialPort == nil {
+		return
+	}
+	
+	// Create a scanner to read the serial stream line by line
+	scanner := bufio.NewScanner(a.serialPort)
+	for scanner.Scan() {
+		line := scanner.Text()
+		// Emit an event named "serial-data" to the Vue frontend
+		runtime.EventsEmit(a.ctx, "serial-data", line)
+	}
+	
+	// If the scanner stops (e.g., device unplugged)
+	if err := scanner.Err(); err != nil {
+		// Ignore the error if we intentionally closed the port to reconnect
+		if !strings.Contains(err.Error(), "Port has been closed") {
+			runtime.EventsEmit(a.ctx, "serial-data", fmt.Sprintf("Serial connection lost: %v", err))
+		}
+	}
+}
+
+// DisconnectSerial closes the active serial connection
+func (a *App) DisconnectSerial() string {
+	if a.serialPort != nil {
+		err := a.serialPort.Close()
+		a.serialPort = nil // Clear the reference
+		if err != nil {
+			return fmt.Sprintf("Error disconnecting: %v", err)
+		}
+		return "Disconnected"
+	}
+	return "Already disconnected"
 }
 
 // SendCommand sends a string (e.g., "Red", "Green") to the Wemos
@@ -1406,9 +2187,9 @@ func (a *App) readLatestStatus(filePath string) string {
 }
 
 // HideWindow allows the frontend to hide the window to the tray
-func (a *App) HideWindow() {
-	runtime.WindowHide(a.ctx)
-}
+// func (a *App) HideWindow() {
+// 	runtime.WindowHide(a.ctx)
+// }
 </file>
 
 <file path="go.mod">
@@ -1420,6 +2201,7 @@ require (
 	github.com/getlantern/systray v1.2.2
 	github.com/wailsapp/wails/v2 v2.13.0
 	go.bug.st/serial v1.8.0
+	golang.org/x/sys v0.47.0
 )
 
 require (
@@ -1457,88 +2239,10 @@ require (
 	github.com/wailsapp/mimetype v1.4.1 // indirect
 	golang.org/x/crypto v0.51.0 // indirect
 	golang.org/x/net v0.54.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.37.0 // indirect
 )
 
 // replace github.com/wailsapp/wails/v2 v2.13.0 => /home/hanif-ahmadzakir/go/pkg/mod
-</file>
-
-<file path="main.go">
-package main
-
-import (
-	"embed"
-
-	"github.com/wailsapp/wails/v2"
-	"github.com/wailsapp/wails/v2/pkg/options"
-	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
-)
-
-//go:embed all:frontend/dist
-var assets embed.FS
-
-func main() {
-	// Create an instance of the app structure
-	app := NewApp()
-
-	// Create application with options
-	err := wails.Run(&options.App{
-		Title:  "teams-busy-light",
-		Width:  1024,
-		Height: 768,
-		AssetServer: &assetserver.Options{
-			Assets: assets,
-		},
-		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
-		OnStartup:        app.startup,
-		Bind: []interface{}{
-			app,
-		},
-	})
-
-	if err != nil {
-		println("Error:", err.Error())
-	}
-}
-</file>
-
-<file path="README.md">
-# README
-
-## About
-
-This is the official Wails Vue template.
-
-You can configure the project by editing `wails.json`. More information about the project settings can be found
-here: https://wails.io/docs/reference/project-config
-
-## Live Development
-
-To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
-
-## Building
-
-To build a redistributable, production mode package, use `wails build`.
-</file>
-
-<file path="wails.json">
-{
-  "$schema": "https://wails.io/schemas/config.v2.json",
-  "name": "teams-busy-light",
-  "outputfilename": "teams-busy-light",
-  "frontend:install": "npm install",
-  "frontend:build": "npm run build",
-  "frontend:dev:watcher": "npm run dev",
-  "frontend:dev:serverUrl": "auto",
-  "author": {
-    "name": "hanifahmadzakir",
-    "email": "hanifahmadzakir@gmail.com"
-  }
-}
 </file>
 
 </files>
