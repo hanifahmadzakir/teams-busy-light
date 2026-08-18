@@ -9,8 +9,6 @@ import (
 	"strings"
 	"time"
 
-	// "github.com/getlantern/systray"
-	// "github.com/wailsapp/wails/v2/pkg/runtime"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.bug.st/serial"
 )
@@ -32,37 +30,11 @@ func NewApp() *App {
 // OnStartup is called when the app starts
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
-
-	// Initialize System Tray in a separate goroutine
-	// go systray.Run(a.onReady, a.onExit)
 	setupSystemTray(a)
 }
 
 // --- SYSTEM TRAY LOGIC ---
-// func (a *App) onReady() {
-// 	systray.SetTitle("Busy Light")
-// 	systray.SetTooltip("Teams Busy Light Controller")
-	
-// 	mOpen := systray.AddMenuItem("Open", "Open the application UI")
-// 	mQuit := systray.AddMenuItem("Quit", "Quit the application")
 
-// 	for {
-// 		select {
-// 		case <-mOpen.ClickedCh:
-// 			runtime.WindowShow(a.ctx)
-// 		case <-mQuit.ClickedCh:
-// 			systray.Quit()
-// 			runtime.Quit(a.ctx)
-// 			return
-// 		}
-// 	}
-// }
-
-// func (a *App) onExit() {
-// 	// Clean up tray icon
-// }
-
-// --- IPC METHODS CALLED BY VUE ---
 
 // GetPorts returns a list of available COM ports
 func (a *App) GetPorts() []string {
@@ -90,7 +62,6 @@ func (a *App) GetPorts() []string {
 
 // ConnectSerial connects to the selected Wemos D1 port
 func (a *App) ConnectSerial(portName string) string {
-	// Close any existing connection before opening a new one
 	if a.serialPort != nil {
 		a.serialPort.Close()
 	}
@@ -102,7 +73,6 @@ func (a *App) ConnectSerial(portName string) string {
 	}
 	a.serialPort = port
 
-	// Start a background goroutine to read incoming serial data
 	go a.listenSerial()
 
 	return "Connected to " + portName
@@ -114,17 +84,13 @@ func (a *App) listenSerial() {
 		return
 	}
 	
-	// Create a scanner to read the serial stream line by line
 	scanner := bufio.NewScanner(a.serialPort)
 	for scanner.Scan() {
 		line := scanner.Text()
-		// Emit an event named "serial-data" to the Vue frontend
 		runtime.EventsEmit(a.ctx, "serial-data", line)
 	}
 	
-	// If the scanner stops (e.g., device unplugged)
 	if err := scanner.Err(); err != nil {
-		// Ignore the error if we intentionally closed the port to reconnect
 		if !strings.Contains(err.Error(), "Port has been closed") {
 			runtime.EventsEmit(a.ctx, "serial-data", fmt.Sprintf("Serial connection lost: %v", err))
 		}
@@ -177,7 +143,7 @@ func (a *App) SetAutoMode(enabled bool, inputPath string) string {
 
 	a.logPath = inputPath
 	
-	go a.watchTeamsLog() // Start background watcher
+	go a.watchTeamsLog()
 	return "Auto mode enabled, watching logs..."
 }
 
@@ -199,7 +165,6 @@ func (a *App) watchTeamsLog() {
                 continue
             }
 
-            // Find the most recently modified file
             var newestFile string
             var newestTime int64
             for _, file := range files {
@@ -232,12 +197,9 @@ func (a *App) readLatestStatus(filePath string) string {
     scanner := bufio.NewScanner(file)
     latestColor := ""
 
-    // Scan through the file. In a production app, you might want to 
-    // seek to the end and tail it, but for small logs, scanning is fine.
     for scanner.Scan() {
         line := scanner.Text()
         
-        // This keyword is based on standard MS Teams log structures
         if strings.Contains(line, "StatusIndicatorStateService: Added") {
             if strings.Contains(line, "Available") {
                 latestColor = "Green"
@@ -252,8 +214,3 @@ func (a *App) readLatestStatus(filePath string) string {
     }
     return latestColor
 }
-
-// HideWindow allows the frontend to hide the window to the tray
-// func (a *App) HideWindow() {
-// 	runtime.WindowHide(a.ctx)
-// }

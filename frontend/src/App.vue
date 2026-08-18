@@ -58,11 +58,9 @@ const clearLogs = () => {
 onMounted(() => {
   refreshPorts();
 
-  // Listen for incoming serial data from the Go backend
   EventsOn("serial-data", (data) => {
     serialLogs.value.push(data);
 
-    // Auto-scroll logic (keep maximum 100 lines to prevent memory issues)
     if (serialLogs.value.length > 100) {
       serialLogs.value.shift();
     }
